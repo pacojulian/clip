@@ -4,8 +4,8 @@ import lombok.Data;
 
 @Data
 public class MakeTransactionRequest {
-    private String destinationUser;
-    private String creationUser;
+    private String clipUser;
+    private String card;
     private Double amount;
     private String date;
 }

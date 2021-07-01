@@ -18,9 +18,12 @@ public class User {
     @Column(name = "name")
     private String name;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "card_id", referencedColumnName = "card_id")
-    private Card card;
+    @Column(name = "account")
+    private String account;
+
+    @Column(name = "account_line")
+    private Double accountLine;
+
 
     @Column(name = "pwd")
     private String pwd;

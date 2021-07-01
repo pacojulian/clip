@@ -19,11 +19,11 @@ public class Transaction {
     @Column(name = "transaction_id")
     private Long transactionId;
 
-    @Column(name = "creation_user")
-    private String creationUser;
+    @Column(name = "clip_user")
+    private String clipUser;
 
-    @Column(name = "destination_user")
-    private Float destinationUser;
+    @Column(name = "card_data")
+    private String cardData;
 
     @Column(name = "amount")
     private Double amount;
