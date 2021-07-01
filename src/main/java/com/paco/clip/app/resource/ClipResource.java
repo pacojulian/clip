@@ -53,7 +53,7 @@ public interface ClipResource {
             @ApiResponse(code = 500, message = "Error al procesar la solicitud"),
     })
     @PostMapping(value = "/v1/disbursement")
-    ClipResponse makeDisbursement(@RequestParam("user") String user);
+    List<DisbursementResponse> makeDisbursement(@RequestParam("user") String user);
 
 
     /**

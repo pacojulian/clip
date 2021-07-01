@@ -13,4 +13,19 @@ public interface TransactionRepository extends CrudRepository<Transaction,Long> 
      * @return list of transactions that the user has received
      */
     List<Transaction> findAllByClipUser(String clipUser);
+
+
+    /**
+     *
+     * @param clipUser id of the clip
+     * @return all transactions of a user grouped by client.
+     */
+    List<Transaction> findAllByClipUserAndIsDisbursementFalseOrderByClient(String clipUser);
+
+    /**
+     *
+     * @param id to search transaction
+     * @return transaction information
+     */
+    Transaction findByTransactionId(Long id);
 }

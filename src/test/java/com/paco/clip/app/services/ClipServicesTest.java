@@ -1,12 +1,15 @@
 package com.paco.clip.app.services;
 
 import com.paco.clip.domain.builder.TransactionBuilder;
+import com.paco.clip.domain.model.Disbursement;
 import com.paco.clip.domain.model.Transaction;
 import com.paco.clip.domain.model.User;
+import com.paco.clip.domain.repository.DisbursementRepository;
 import com.paco.clip.domain.repository.TransactionRepository;
 import com.paco.clip.domain.repository.UserRepository;
 import com.paco.clip.representation.request.MakeTransactionRequest;
 import com.paco.clip.representation.response.ClipResponse;
+import com.paco.clip.representation.response.DisbursementResponse;
 import com.paco.clip.representation.response.TransactionsResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -36,9 +40,12 @@ class ClipServicesTest {
     @Mock
     private TransactionBuilder transactionBuilder;
 
+    @Mock
+    private DisbursementRepository disbursementRepository;
+
     @BeforeEach
     public void setUp() {
-        clipServices = new ClipServicesImpl(userRepository, transactionRepository, transactionBuilder);
+        clipServices = new ClipServicesImpl(userRepository, transactionRepository, transactionBuilder,disbursementRepository);
     }
 
     @Test
@@ -59,6 +66,19 @@ class ClipServicesTest {
         transactions.add(buildTransaction());
         Mockito.lenient().when(transactionRepository.findAllByClipUser(Mockito.anyString())).thenReturn(transactions);
         List<Transaction> response = clipServices.getTransactionsByUser(Mockito.anyString());
+        assertNotNull(response);
+    }
+
+    @Test
+    void testMakeDisbursement(){
+        List<Transaction> transactionsList = new ArrayList<>();
+        transactionsList.add(buildTransaction());
+        Mockito.lenient().when(transactionRepository.findAllByClipUserAndIsDisbursementFalseOrderByClient(Mockito.anyString())).thenReturn(transactionsList);
+        Mockito.lenient().when(transactionRepository.findByTransactionId(Mockito.anyLong())).thenReturn(buildTransaction());
+        Mockito.lenient().when(transactionRepository.save(buildTransaction())).thenReturn(buildTransaction());
+        Mockito.lenient().when(disbursementRepository.save(buildDisbursement())).thenReturn(buildDisbursement());
+        Mockito.lenient().when(transactionBuilder.buildDisbursement(Mockito.anyString(),Mockito.anyDouble())).thenReturn(buildDisbursement());
+        List<DisbursementResponse> response = clipServices.makeDisbursement("allan96");
         assertNotNull(response);
     }
 
@@ -90,5 +110,14 @@ class ClipServicesTest {
         transaction.setAmount(100.0);
         transaction.setIsDisbursement(false);
         return transaction;
+    }
+
+    private Disbursement buildDisbursement(){
+        Disbursement disbursement = new Disbursement();
+        disbursement.setDisbursementId(Math.abs(new Random().nextLong()));
+        disbursement.setAmount(100.0);
+        disbursement.setDestinationUser("allan96");
+        disbursement.setDate(new Timestamp(System.currentTimeMillis()));
+        return  disbursement;
     }
 }

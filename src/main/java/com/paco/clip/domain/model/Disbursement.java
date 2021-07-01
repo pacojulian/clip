@@ -24,7 +24,7 @@ public class Disbursement {
     private Double amount;
 
     @Column(name = "date")
-    private Timestamp timestamp;
+    private Timestamp date;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "disbursement_id")

@@ -27,7 +27,7 @@ public interface ClipServices {
      * @param user which is going to receive the disbursements
      * @return message and status code if the transaction was successful
      */
-    ClipResponse makeDisbursement(@RequestParam("user") String user);
+    List<DisbursementResponse> makeDisbursement(@RequestParam("user") String user);
 
     /**
      * @param user which is going to receive the disbursements

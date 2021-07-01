@@ -1,5 +1,6 @@
 package com.paco.clip.domain.builder;
 
+import com.paco.clip.domain.model.Disbursement;
 import com.paco.clip.domain.model.Transaction;
 import com.paco.clip.representation.request.MakeTransactionRequest;
 import org.springframework.stereotype.Component;
@@ -25,6 +26,14 @@ public class TransactionBuilder {
         return transaction;
     }
 
+    public Disbursement buildDisbursement(String user,double total){
+        Disbursement disbursement = new Disbursement();
+        disbursement.setDisbursementId(Math.abs(new Random().nextLong()));
+        disbursement.setAmount(total);
+        disbursement.setDestinationUser(user);
+        disbursement.setDate(new Timestamp(System.currentTimeMillis()));
+        return  disbursement;
+    }
     private Timestamp convertDate(String date) {
         Date date1;
         try {

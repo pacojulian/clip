@@ -33,8 +33,8 @@ public class ClipController implements ClipResource {
     }
 
     @Override
-    public ClipResponse makeDisbursement(String user) {
-        return null;
+    public List<DisbursementResponse> makeDisbursement(String user) {
+        return clipServices.makeDisbursement(user);
     }
 
     @Override
