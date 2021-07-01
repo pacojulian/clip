@@ -82,6 +82,15 @@ class ClipServicesTest {
         assertNotNull(response);
     }
 
+    @Test
+    void testGetAllDisbursementsFromUser() {
+        List<Disbursement> disbursements = new ArrayList<>();
+        disbursements.add(buildDisbursement());
+        Mockito.lenient().when(disbursementRepository.findAllByDestinationUser(Mockito.anyString())).thenReturn(disbursements);
+        List<Disbursement> response = clipServices.getDisbursementByUSer(Mockito.anyString());
+        assertNotNull(response);
+    }
+
     private MakeTransactionRequest getRequest() {
         MakeTransactionRequest request = new MakeTransactionRequest();
         request.setAmount(100.0);

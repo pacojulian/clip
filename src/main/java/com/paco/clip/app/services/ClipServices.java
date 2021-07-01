@@ -1,5 +1,6 @@
 package com.paco.clip.app.services;
 
+import com.paco.clip.domain.model.Disbursement;
 import com.paco.clip.domain.model.Transaction;
 import com.paco.clip.representation.request.MakeTransactionRequest;
 import com.paco.clip.representation.response.ClipResponse;
@@ -33,5 +34,5 @@ public interface ClipServices {
      * @param user which is going to receive the disbursements
      * @return message and status code if the transaction was successful
      */
-    DisbursementResponse getDisbursementByUSer(@RequestParam("user") String user);
+    List<Disbursement> getDisbursementByUSer(@RequestParam("user") String user);
 }

@@ -18,14 +18,12 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 @RequiredArgsConstructor
 public class ClipServicesImpl implements ClipServices {
 
     //Todo exception handler
-    //Todo add validation
 
     private final UserRepository userRepository;
 
@@ -101,8 +99,14 @@ public class ClipServicesImpl implements ClipServices {
     }
 
     @Override
-    public DisbursementResponse getDisbursementByUSer(String user) {
-        return null;
+    public List<Disbursement> getDisbursementByUSer(String user) {
+        LOGGER.info("obtaining all disbursements from user {}", user);
+        List<Disbursement> response = disbursementRepository.findAllByDestinationUser(user);
+        if (response == null || response.isEmpty()) {
+            LOGGER.error("There are no transactions for that user");
+            throw new RuntimeException();
+        }
+        return response;
     }
 
     private Map<String, List<TransactionBo>> groupByTransaction(List<Transaction> transactionList) {

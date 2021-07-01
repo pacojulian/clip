@@ -1,5 +1,6 @@
 package com.paco.clip.app.resource;
 
+import com.paco.clip.domain.model.Disbursement;
 import com.paco.clip.domain.model.Transaction;
 import com.paco.clip.representation.request.MakeTransactionRequest;
 import com.paco.clip.representation.response.ClipResponse;
@@ -68,6 +69,6 @@ public interface ClipResource {
             @ApiResponse(code = 500, message = "Error al procesar la solicitud"),
     })
     @GetMapping(value = "/v1/disbursement")
-    DisbursementResponse getDisbursementByUSer(@RequestParam("user") String user);
+    List<Disbursement> getDisbursementByUSer(@RequestParam("user") String user);
 
 }
