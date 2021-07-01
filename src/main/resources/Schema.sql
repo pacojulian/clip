@@ -18,6 +18,7 @@ CREATE TABLE TRANSACTION(
     transaction_id bigint  NOT NULL,
     card_data varchar(50) NOT NULL,
     clip_user varchar(50) NOT NULL,
+    client varchar (50) NOT NULL,
     amount decimal NOT NULL,
     disbursement_id bigint,
     is_disbursement boolean NOT NULL,

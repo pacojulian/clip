@@ -8,4 +8,5 @@ public class MakeTransactionRequest {
     private String card;
     private Double amount;
     private String date;
+    private String client;
 }

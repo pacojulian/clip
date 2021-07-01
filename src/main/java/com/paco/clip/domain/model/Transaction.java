@@ -25,6 +25,9 @@ public class Transaction {
     @Column(name = "card_data")
     private String cardData;
 
+    @Column(name = "client")
+    private String client;
+
     @Column(name = "amount")
     private Double amount;
 

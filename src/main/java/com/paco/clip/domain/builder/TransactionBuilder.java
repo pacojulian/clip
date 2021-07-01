@@ -17,6 +17,7 @@ public class TransactionBuilder {
         Transaction transaction = new Transaction();
         transaction.setTransactionId(Math.abs(new Random().nextLong()));
         transaction.setAmount(request.getAmount());
+        transaction.setClient(request.getClient());
         transaction.setClipUser(request.getClipUser());
         transaction.setDate(convertDate(request.getDate()));
         transaction.setIsDisbursement(false);
