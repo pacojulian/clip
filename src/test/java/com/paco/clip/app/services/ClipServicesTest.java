@@ -1,5 +1,6 @@
 package com.paco.clip.app.services;
 
+import com.paco.clip.app.services.impl.ClipServicesImpl;
 import com.paco.clip.domain.builder.TransactionBuilder;
 import com.paco.clip.domain.model.Disbursement;
 import com.paco.clip.domain.model.Transaction;
@@ -10,7 +11,6 @@ import com.paco.clip.domain.repository.UserRepository;
 import com.paco.clip.representation.request.MakeTransactionRequest;
 import com.paco.clip.representation.response.ClipResponse;
 import com.paco.clip.representation.response.DisbursementResponse;
-import com.paco.clip.representation.response.TransactionsResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,7 +45,7 @@ class ClipServicesTest {
 
     @BeforeEach
     public void setUp() {
-        clipServices = new ClipServicesImpl(userRepository, transactionRepository, transactionBuilder,disbursementRepository);
+        clipServices = new ClipServicesImpl(userRepository, transactionRepository,disbursementRepository,transactionBuilder);
     }
 
     @Test

@@ -1,8 +1,11 @@
 package com.paco.clip.domain.builder;
 
+import com.paco.clip.app.exceptions.InternalServerErrorException;
 import com.paco.clip.domain.model.Disbursement;
 import com.paco.clip.domain.model.Transaction;
 import com.paco.clip.representation.request.MakeTransactionRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.sql.Timestamp;
@@ -11,9 +14,11 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Random;
 
-// TODO add exception handling
 @Component
 public class TransactionBuilder {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(TransactionBuilder.class);
+
     public Transaction buildTransactionObject(MakeTransactionRequest request) {
         Transaction transaction = new Transaction();
         transaction.setTransactionId(Math.abs(new Random().nextLong()));
@@ -40,8 +45,8 @@ public class TransactionBuilder {
             date1 = new SimpleDateFormat("dd/MM/yyyy").parse(date);
             return new Timestamp(date1.getTime());
         } catch (ParseException e) {
-            e.printStackTrace();
-            throw new RuntimeException();
+           LOGGER.error("Error converting date");
+            throw new InternalServerErrorException(e.getMessage());
         }
 
     }
