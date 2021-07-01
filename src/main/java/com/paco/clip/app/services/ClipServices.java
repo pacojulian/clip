@@ -1,11 +1,13 @@
 package com.paco.clip.app.services;
 
+import com.paco.clip.domain.model.Transaction;
 import com.paco.clip.representation.request.MakeTransactionRequest;
 import com.paco.clip.representation.response.ClipResponse;
 import com.paco.clip.representation.response.DisbursementResponse;
-import com.paco.clip.representation.response.TransactionsResponse;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
 
 public interface ClipServices {
 
@@ -19,7 +21,7 @@ public interface ClipServices {
      * @param user the id which user you are trying to retrieve the information
      * @return list of transactions that a certain user has received.
      */
-    TransactionsResponse getTransactionsByUser(@RequestParam("user") String user);
+    List<Transaction> getTransactionsByUser(@RequestParam("user") String user);
 
     /**
      * @param user which is going to receive the disbursements

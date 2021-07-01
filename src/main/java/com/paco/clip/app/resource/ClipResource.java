@@ -1,5 +1,6 @@
 package com.paco.clip.app.resource;
 
+import com.paco.clip.domain.model.Transaction;
 import com.paco.clip.representation.request.MakeTransactionRequest;
 import com.paco.clip.representation.response.ClipResponse;
 import com.paco.clip.representation.response.DisbursementResponse;
@@ -8,6 +9,8 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RequestMapping(value = "/clip")
 public interface ClipResource {
@@ -37,7 +40,7 @@ public interface ClipResource {
             @ApiResponse(code = 500, message = "Error al procesar la solicitud"),
     })
     @GetMapping(value = "/v1/transaction")
-    TransactionsResponse getTransactionsByUser(@RequestParam("user") String user);
+    List<Transaction> getTransactionsByUser(@RequestParam("user") String user);
 
     /**
      * @param user which is going to receive the disbursements
