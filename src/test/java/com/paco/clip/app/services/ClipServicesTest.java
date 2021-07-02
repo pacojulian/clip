@@ -76,6 +76,7 @@ class ClipServicesTest {
     void testMakeDisbursement() {
         List<Transaction> transactionsList = new ArrayList<>();
         transactionsList.add(buildTransaction());
+        transactionsList.add(buildTransaction());
         Mockito.lenient().when(transactionRepository.findAllByClipUserAndIsDisbursementFalseOrderByClient(Mockito.anyString())).thenReturn(transactionsList);
         Mockito.lenient().when(transactionRepository.findByTransactionId(Mockito.anyLong())).thenReturn(buildTransaction());
         Mockito.lenient().when(transactionRepository.save(buildTransaction())).thenReturn(buildTransaction());
@@ -102,7 +103,6 @@ class ClipServicesTest {
         ClipResponse assertion = new ClipResponse();
         assertion.setStatusCode(200);
         assertion.setMessage("Operacion guardada correctamente");
-
         Mockito.lenient().when(userRepository.findByClipId(Mockito.anyString())).thenReturn(null);
         Mockito.lenient().when(transactionRepository.save(buildTransaction())).thenReturn(buildTransaction());
         ClipResponse response = clipServices.makeTransaction(getRequest());
@@ -178,6 +178,7 @@ class ClipServicesTest {
     private Transaction buildTransaction() {
         Transaction transaction = new Transaction();
         transaction.setTransactionId(100L);
+        transaction.setClient("yalo");
         transaction.setCardData("213");
         transaction.setClipUser("allanjulian96");
         transaction.setDate(new Timestamp(System.currentTimeMillis()));

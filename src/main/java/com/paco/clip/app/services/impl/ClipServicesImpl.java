@@ -9,7 +9,7 @@ import com.paco.clip.domain.model.User;
 import com.paco.clip.domain.repository.DisbursementRepository;
 import com.paco.clip.domain.repository.TransactionRepository;
 import com.paco.clip.domain.repository.UserRepository;
-import com.paco.clip.representation.bo.TransactionBo;
+import com.paco.clip.representation.bo.TransactionStack;
 import com.paco.clip.representation.request.MakeTransactionRequest;
 import com.paco.clip.representation.response.ClipResponse;
 import com.paco.clip.representation.response.DisbursementResponse;
@@ -86,27 +86,29 @@ public class ClipServicesImpl implements ClipServices {
             List<DisbursementResponse> response = new ArrayList<>();
             List<Transaction> transactionList = transactionRepository.findAllByClipUserAndIsDisbursementFalseOrderByClient(user);
             if (transactionList.isEmpty()) throw new NotFoundException(TRANSACTION_NOT_FOUND);
-            Map<String, List<TransactionBo>> transactionsGroup = groupByTransaction(transactionList);
-            transactionsGroup.forEach((k, v) -> {
-                List<Double> transactionsAmount = new ArrayList<>();
-                DisbursementResponse disResponse = new DisbursementResponse();
-                Double total = v.get(v.size() - 1).getTotal();
-                Disbursement disbursement = transactionBuilder.buildDisbursement(user, total);
-                disbursementRepository.save(disbursement);
-                v.forEach(transactionBo -> {
-                    try {
-                        updateTransaction(transactionBo.getTransactionId(), disbursement.getDisbursementId());
-                    } catch (Exception e) {
-                        throw new InternalServerErrorException(TRANSACTION_ERROR);
-                    }
-                    transactionsAmount.add(transactionBo.getAmount());
-                });
-                disResponse.setClient(k);
-                disResponse.setClipUser(user);
-                disResponse.setTotal(total);
-                disResponse.setTransactions(transactionsAmount);
-                response.add(disResponse);
-            });
+            Stack<TransactionStack> stack = new Stack<>();
+            Double total = 0.0;
+            String userDebt = "";
+            Iterator<Transaction> it = transactionList.iterator();
+            int i = 0;
+            while (it.hasNext()) {
+                if (stack.empty()) {
+                    userDebt = transactionList.get(i).getClient();
+                }
+                if (userDebt.equals(transactionList.get(i).getClient())) {
+                    total += transactionList.get(i).getAmount();
+                } else {
+                    response.add(emptyStack(user, userDebt, total, stack));
+                    userDebt = transactionList.get(i).getClient();
+                    total = transactionList.get(i).getAmount();
+                }
+                addToStack(transactionList.get(i), stack);
+                i++;
+                it.next();
+            }
+            if(!stack.isEmpty()){
+                response.add(emptyStack(user, userDebt, total, stack));
+            }
             LOGGER.info("Finished disbursement");
             return response;
         } catch (Exception e) {
@@ -115,45 +117,52 @@ public class ClipServicesImpl implements ClipServices {
         }
     }
 
-    @Override
-    public List<Disbursement> getDisbursementByUSer(String user){
-       try {
-           LOGGER.info("obtaining all disbursements from user {}", user);
-           List<Disbursement> response = disbursementRepository.findAllByDestinationUser(user);
-           if (response == null || response.isEmpty()) {
-               LOGGER.error("There are no Disbursements for that user");
-               throw new NotFoundException(DISBURSEMENT_NOT_FOUND);
-           }
-           return response;
-       }catch (Exception e){
-           LOGGER.error("Error getting disbursements for user : {}", user);
-           throw new InternalServerErrorException(e.getMessage());
-       }
+    private void addToStack(Transaction transaction, Stack<TransactionStack> stack) {
+        TransactionStack transactionStack = new TransactionStack();
+        transactionStack.setAmount(transaction.getAmount());
+        transactionStack.setTransactionId(transaction.getTransactionId());
+        transactionStack.setUser(transaction.getClient());
+        stack.push(transactionStack);
     }
 
-    private Map<String, List<TransactionBo>> groupByTransaction(List<Transaction> transactionList) {
-        Map<String, List<TransactionBo>> transactionsGroup = new HashMap<>();
-        for (Transaction t : transactionList) {
-            if (transactionsGroup.get(t.getClient()) != null) {
-                List<TransactionBo> listAmounts = transactionsGroup.get(t.getClient());
-                TransactionBo bo = new TransactionBo();
-                bo.setTotal(listAmounts.get(0).getAmount() + t.getAmount());
-                bo.setAmount(t.getAmount());
-                bo.setTransactionId(t.getTransactionId());
-                listAmounts.add(bo);
-                transactionsGroup.put(t.getClient(), listAmounts);
-            } else {
-                List<TransactionBo> listAmounts = new ArrayList<>();
-                TransactionBo bo = new TransactionBo();
-                bo.setTotal(t.getAmount());
-                bo.setAmount(t.getAmount());
-                bo.setTransactionId(t.getTransactionId());
-                listAmounts.add(bo);
-                transactionsGroup.put(t.getClient(), listAmounts);
+    private DisbursementResponse emptyStack(String clipUser, String client, Double total, Stack<TransactionStack> stack) {
+        DisbursementResponse disbursementResponse = new DisbursementResponse();
+        List<Double> transactions = new ArrayList<>();
+        Disbursement disbursement = transactionBuilder.buildDisbursement(clipUser, total);
+        disbursementRepository.save(disbursement);
+        while (!stack.isEmpty()) {
+            try {
+                TransactionStack transactionStack = stack.pop();
+                updateTransaction(transactionStack.getTransactionId(), disbursement.getDisbursementId());
+                transactions.add(transactionStack.getAmount());
+
+            } catch (NotFoundException e) {
+                throw new InternalServerErrorException(e.getMessage());
             }
         }
-        return transactionsGroup;
+        disbursementResponse.setTransactions(transactions);
+        disbursementResponse.setTotal(total);
+        disbursementResponse.setClient(client);
+        disbursementResponse.setClipUser(clipUser);
+        return disbursementResponse;
     }
+
+    @Override
+    public List<Disbursement> getDisbursementByUSer(String user) {
+        try {
+            LOGGER.info("obtaining all disbursements from user {}", user);
+            List<Disbursement> response = disbursementRepository.findAllByDestinationUser(user);
+            if (response == null || response.isEmpty()) {
+                LOGGER.error("There are no Disbursements for that user");
+                throw new NotFoundException(DISBURSEMENT_NOT_FOUND);
+            }
+            return response;
+        } catch (Exception e) {
+            LOGGER.error("Error getting disbursements for user : {}", user);
+            throw new InternalServerErrorException(e.getMessage());
+        }
+    }
+
 
     private void updateTransaction(Long transactionId, long disbursementId) throws NotFoundException {
         Transaction transaction = transactionRepository.findByTransactionId(transactionId);
