@@ -11,6 +11,7 @@ import com.paco.clip.domain.repository.UserRepository;
 import com.paco.clip.representation.request.MakeTransactionRequest;
 import com.paco.clip.representation.response.ClipResponse;
 import com.paco.clip.representation.response.DisbursementResponse;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,8 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 class ClipServicesTest {
@@ -45,9 +45,12 @@ class ClipServicesTest {
 
     @BeforeEach
     public void setUp() {
-        clipServices = new ClipServicesImpl(userRepository, transactionRepository,disbursementRepository,transactionBuilder);
+        clipServices = new ClipServicesImpl(userRepository, transactionRepository, disbursementRepository, transactionBuilder);
     }
 
+    /*
+     *  Happy Path Tests
+     * */
     @Test
     void testMakeTransaction() {
         ClipResponse assertion = new ClipResponse();
@@ -70,14 +73,14 @@ class ClipServicesTest {
     }
 
     @Test
-    void testMakeDisbursement(){
+    void testMakeDisbursement() {
         List<Transaction> transactionsList = new ArrayList<>();
         transactionsList.add(buildTransaction());
         Mockito.lenient().when(transactionRepository.findAllByClipUserAndIsDisbursementFalseOrderByClient(Mockito.anyString())).thenReturn(transactionsList);
         Mockito.lenient().when(transactionRepository.findByTransactionId(Mockito.anyLong())).thenReturn(buildTransaction());
         Mockito.lenient().when(transactionRepository.save(buildTransaction())).thenReturn(buildTransaction());
         Mockito.lenient().when(disbursementRepository.save(buildDisbursement())).thenReturn(buildDisbursement());
-        Mockito.lenient().when(transactionBuilder.buildDisbursement(Mockito.anyString(),Mockito.anyDouble())).thenReturn(buildDisbursement());
+        Mockito.lenient().when(transactionBuilder.buildDisbursement(Mockito.anyString(), Mockito.anyDouble())).thenReturn(buildDisbursement());
         List<DisbursementResponse> response = clipServices.makeDisbursement("allan96");
         assertNotNull(response);
     }
@@ -90,6 +93,68 @@ class ClipServicesTest {
         List<Disbursement> response = clipServices.getDisbursementByUSer(Mockito.anyString());
         assertNotNull(response);
     }
+
+    /**
+     * Error Tests
+     */
+    @Test
+    void testMakeTransactionExceptionUserNotFound() {
+        ClipResponse assertion = new ClipResponse();
+        assertion.setStatusCode(200);
+        assertion.setMessage("Operacion guardada correctamente");
+
+        Mockito.lenient().when(userRepository.findByClipId(Mockito.anyString())).thenReturn(null);
+        Mockito.lenient().when(transactionRepository.save(buildTransaction())).thenReturn(buildTransaction());
+        ClipResponse response = clipServices.makeTransaction(getRequest());
+        assertNotEquals(assertion, response);
+    }
+
+    @Test
+    void testGetAllTransactionsFromUserException() {
+        Mockito.lenient().when(transactionRepository.findAllByClipUser(Mockito.anyString())).thenReturn(null);
+        Assertions.assertThrows(Exception.class, () -> clipServices.getTransactionsByUser(Mockito.anyString()));
+    }
+
+    @Test
+    void testGetAllDisbursementsFromUserException() {
+
+        Mockito.lenient().when(disbursementRepository.findAllByDestinationUser(Mockito.anyString())).thenReturn(null);
+        Assertions.assertThrows(Exception.class, () -> clipServices.getDisbursementByUSer(Mockito.anyString()));
+    }
+
+    @Test
+    void testMakeDisbursementExceptionFindAll() {
+        Mockito.lenient().when(transactionRepository.findAllByClipUserAndIsDisbursementFalseOrderByClient(Mockito.anyString())).thenReturn(null);
+        Assertions.assertThrows(Exception.class, () -> clipServices.getDisbursementByUSer(Mockito.anyString()));
+
+    }
+
+    @Test
+    void testMakeDisbursementExceptionUpdateTransaction() {
+        List<Transaction> transactionsList = new ArrayList<>();
+        transactionsList.add(buildTransaction());
+        Mockito.lenient().when(transactionRepository.findAllByClipUserAndIsDisbursementFalseOrderByClient(Mockito.anyString())).thenReturn(transactionsList);
+        Mockito.lenient().when(transactionRepository.findByTransactionId(Mockito.anyLong())).thenReturn(buildTransaction());
+        Mockito.lenient().when(transactionRepository.save(buildTransaction())).thenReturn(null);
+        Assertions.assertThrows(Exception.class, () -> clipServices.getDisbursementByUSer(Mockito.anyString()));
+    }
+
+    @Test
+    void testMakeDisbursementExceptionDisbursementFailed() {
+        List<Transaction> transactionsList = new ArrayList<>();
+        transactionsList.add(buildTransaction());
+        Mockito.lenient().when(transactionRepository.findAllByClipUserAndIsDisbursementFalseOrderByClient(Mockito.anyString())).thenReturn(transactionsList);
+        Mockito.lenient().when(transactionRepository.findByTransactionId(Mockito.anyLong())).thenReturn(buildTransaction());
+        Mockito.lenient().when(transactionRepository.save(buildTransaction())).thenReturn(buildTransaction());
+        Mockito.lenient().when(disbursementRepository.save(buildDisbursement())).thenReturn(null);
+        Mockito.lenient().when(transactionBuilder.buildDisbursement(Mockito.anyString(), Mockito.anyDouble())).thenReturn(buildDisbursement());
+        Assertions.assertThrows(Exception.class, () -> clipServices.getDisbursementByUSer(Mockito.anyString()));
+    }
+
+    /**
+     * Additional Information
+     */
+
 
     private MakeTransactionRequest getRequest() {
         MakeTransactionRequest request = new MakeTransactionRequest();
@@ -121,12 +186,12 @@ class ClipServicesTest {
         return transaction;
     }
 
-    private Disbursement buildDisbursement(){
+    private Disbursement buildDisbursement() {
         Disbursement disbursement = new Disbursement();
         disbursement.setDisbursementId(Math.abs(new Random().nextLong()));
         disbursement.setAmount(100.0);
         disbursement.setDestinationUser("allan96");
         disbursement.setDate(new Timestamp(System.currentTimeMillis()));
-        return  disbursement;
+        return disbursement;
     }
 }
