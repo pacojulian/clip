@@ -15,7 +15,7 @@ This project contains the information how the API Works, how to setup and some g
 ## Building and runing the application
 
 * Download the source code from github: `https://github.com/pacojulian/clip.git`
-* To build the application execute the command: **mvn install**
+* To build the application execute the command: **mvn clean install**
 * To run the application execute the command: **mvn spring-boot:run** 
 
 This Application use Swagger for the api documentation you can visit it at: **localhost:8080/swagger-ui.html**<br/>
